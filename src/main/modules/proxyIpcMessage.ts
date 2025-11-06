@@ -1,6 +1,11 @@
 import { BrowserWindow } from "electron";
 import { createLogger } from "./createLogger";
 
+type WebContents = {
+  _events: Record<string | symbol, any>;
+  session: { _events: Record<string | symbol, any>; partition: string };
+};
+
 let log = createLogger("IPC Proxy");
 
 // 由于不能互相引用，所以这边只能延迟重新创建
@@ -21,9 +26,25 @@ const ipcSendEventHandlers: Map<string, Set<IpcCallback>> = new Map();
 const interceptIpcReceiveEventHandlers: Map<string, Set<IpcInterceptCallback>> = new Map();
 const interceptIpcSendEventHandlers: Map<string, Set<IpcInterceptCallback>> = new Map();
 
+const proxyFlag = Symbol("isProxyed");
+
+let isProxySession = false;
+
 // 工具函数：确保事件名是数组
 function normalizeEventNames(eventName: EventName): string[] {
   return Array.isArray(eventName) ? eventName : [eventName];
+}
+
+function normalizeEvents(args: any[], direction: "in" | "out") {
+  const len = args.length;
+  if (direction === "out") {
+    if (isProxySession) {
+      return len === 4 ? [args[0], args[2], args[3]] : args.slice(0, 3);
+    } else {
+      return len === 3 ? [args[0], false, args[1], args[2]] : args.slice(0, 4);
+    }
+  }
+  return len === 3 ? [args[0], false, args[1], args[2]] : args.slice(0, 4);
 }
 
 // 添加监听
@@ -182,33 +203,44 @@ function proxyIpcMessages(window: BrowserWindow) {
     throw new TypeError("Expected a BrowserWindow instance");
   }
 
-  if ((window as any)._ipcProxied) return;
-  (window as any)._ipcProxied = true;
+  if ((window as any)[proxyFlag]) return;
+  (window as any)[proxyFlag] = true;
 
-  const webContents = window.webContents as unknown as { _events: Record<string, any> };
-  const events = webContents._events;
-  if (!events) {
-    log("No events found on webContents.");
-    return;
-  }
+  const webContents = window.webContents as unknown as WebContents;
+  let events = webContents._events;
 
   log(`Proxying IPC for window: ${window.id}`);
 
+  if (!events["-ipc-message"]) {
+    isProxySession = true;
+    events = webContents.session._events;
+    log(`Proxying IPC receive for session`);
+  } else {
+    log(`Proxying IPC receive for webContents`);
+  }
+
+  if (!events) {
+    log("No events found on webContents or session.");
+    return;
+  }
+
   // 代理接收端
-  if (events["-ipc-message"]) {
+  if (events["-ipc-message"] && !events[proxyFlag]) {
+    events[proxyFlag] = true;
     const originalReceive = events["-ipc-message"];
     events["-ipc-message"] = new Proxy(originalReceive, {
       apply(target, thisArg, args) {
+        const legacyArgs = normalizeEvents(args, "in");
         // 拦截器
         for (const handler of interceptIpcReceiveHandlers) {
           try {
-            const result = handler(...args);
+            const result = handler(...legacyArgs);
             if (result) {
               if (Array.isArray(result)) {
-                args = result;
+                args = normalizeEvents(result, "out");
               } else {
                 if (result.action === "replace" && result.args) {
-                  args = result.args;
+                  args = normalizeEvents(result.args, "out");
                 } else if (result.action === "block") {
                   return;
                 }
@@ -219,17 +251,17 @@ function proxyIpcMessages(window: BrowserWindow) {
           }
         }
         // 按事件名拦截器
-        const ipcRecvInterceptorsSet = interceptIpcReceiveEventHandlers.get(args?.[3]?.[1]?.cmdName);
+        const ipcRecvInterceptorsSet = interceptIpcReceiveEventHandlers.get(legacyArgs?.[3]?.[1]?.cmdName);
         if (ipcRecvInterceptorsSet) {
           for (const handler of ipcRecvInterceptorsSet) {
             try {
-              const result = handler(...args);
+              const result = handler(...legacyArgs);
               if (result) {
                 if (Array.isArray(result)) {
-                  args = result;
+                  args = normalizeEvents(result, "out");
                 } else {
                   if (result.action === "replace" && result.args) {
-                    args = result.args;
+                    args = normalizeEvents(result.args, "out");
                   } else if (result.action === "block") {
                     return;
                   }
@@ -243,17 +275,17 @@ function proxyIpcMessages(window: BrowserWindow) {
         // 全局监听器
         for (const handler of ipcReceiveHandlers) {
           try {
-            handler(...args);
+            handler(...legacyArgs);
           } catch (err: any) {
             log("Receive handler error:", err, err?.stack);
           }
         }
         // 按事件名监听器
-        const ipcReceiveHandlersSet = ipcReceiveEventHandlers.get(args?.[3]?.[1]?.cmdName);
+        const ipcReceiveHandlersSet = ipcReceiveEventHandlers.get(legacyArgs?.[3]?.[1]?.cmdName);
         if (ipcReceiveHandlersSet) {
           for (const handler of ipcReceiveHandlersSet) {
             try {
-              handler(...args);
+              handler(...legacyArgs);
             } catch (err: any) {
               log("Receive event handler error:", err, err?.stack);
             }
@@ -262,6 +294,8 @@ function proxyIpcMessages(window: BrowserWindow) {
         return target.apply(thisArg, args);
       },
     });
+  } else if (events[proxyFlag]) {
+    log("'-ipc-message' already proxied.");
   } else {
     log("No '-ipc-message' listener found.");
   }
