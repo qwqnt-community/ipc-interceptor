@@ -8,6 +8,9 @@ importers:
 
   .:
     devDependencies:
+      '@qwqnt/types':
+        specifier: github:qwqnt-community/types
+        version: https://codeload.github.com/qwqnt-community/types/tar.gz/dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037
       '@types/node':
         specifier: 20.11.20
         version: 20.11.20
@@ -290,6 +293,10 @@ packages:
   '@parcel/watcher@2.5.1':
     resolution: {integrity: sha512-dfUnCxiN9H4ap84DvD2ubjw+3vUNpstxa0TneY/Paat8a3R4uQZDLSvWjmznAY/DoahqTHl9V46HF/Zs3F29pg==}
     engines: {node: '>= 10.0.0'}
+
+  '@qwqnt/types@https://codeload.github.com/qwqnt-community/types/tar.gz/dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037':
+    resolution: {tarball: https://codeload.github.com/qwqnt-community/types/tar.gz/dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037}
+    version: 0.0.0
 
   '@sindresorhus/is@4.6.0':
     resolution: {integrity: sha512-t09vSN3MdfsyCHoFcTRCH/iUtG7OJ0CsjzB8cjAmKc/va/kIgeDI/TxsigdncE/4be734m0cvIYwNaV4i2XqAw==}
@@ -1009,6 +1016,8 @@ snapshots:
       '@parcel/watcher-win32-ia32': 2.5.1
       '@parcel/watcher-win32-x64': 2.5.1
     optional: true
+
+  '@qwqnt/types@https://codeload.github.com/qwqnt-community/types/tar.gz/dbf148cedce0fa64bd1bab015e2f4cd2a0bbb037': {}
 
   '@sindresorhus/is@4.6.0': {}
 

@@ -18,6 +18,7 @@
   "keywords": [],
   "packageManager": "pnpm@10.15.0",
   "devDependencies": {
+    "@qwqnt/types": "github:qwqnt-community/types",
     "@types/node": "20.11.20",
     "electron": "^37.2.5",
     "esbuild": "^0.25.8",
