@@ -22,8 +22,6 @@
     "@types/node": "20.11.20",
     "electron": "^37.2.5",
     "esbuild": "^0.25.8",
-    "esbuild-sass-plugin": "^3.3.1",
-    "sass": "^1.89.2",
     "ts-node": "^10.9.2",
     "typescript": "^5.9.2"
   }
