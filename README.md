@@ -13,7 +13,7 @@
 ```json
 "qwqnt":{
   "dependencies": {
-    "ipc_interceptor": "^1.1.0"
+    "ipc_interceptor": "^1.2.0"
   }
 }
 ```
