@@ -1,6 +1,6 @@
 {
   "$schema": "https://raw.githubusercontent.com/QwQ-002/types/main/plugin.schema.json",
-  "name": "ipc_interceptor",
+  "name": "qwqnt-ipc-interceptor",
   "version": "1.2.0",
   "description": "统一管理 IPC 事件",
   "type": "commonjs",
