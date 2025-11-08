@@ -1,4 +1,4 @@
-# QwQNT-ipc_interceptor
+# qwqnt-ipc-interceptor
 
 统一管理 IPC 事件
 
@@ -8,7 +8,7 @@
 
 ### 使用方法
 
-在 `package.json` 中添加`ipc_interceptor` 依赖
+在 `package.json` 中添加 `qwqnt-ipc-interceptor` 依赖 (1.2.0及以下版本为 `ipc_interceptor`)
 
 ```json
 "qwqnt":{
