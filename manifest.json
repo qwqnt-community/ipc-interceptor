@@ -18,7 +18,7 @@
     "repo": "https://github.com/qwqnt-community/qwqnt-ipc-interceptor",
     "branch": "master",
     "release": {
-      "file": "ipc_interceptor.zip"
+      "file": "qwqnt-ipc-interceptor.zip"
     }
   }
 }
