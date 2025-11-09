@@ -15,7 +15,7 @@
     "main": "./dist/main/index.js"
   },
   "repository": {
-    "repo": "QwQ-002/QWQNT-IpcInterceptor",
+    "repo": "https://github.com/qwqnt-community/qwqnt-ipc-interceptor",
     "branch": "master",
     "release": {
       "file": "ipc_interceptor.zip"
